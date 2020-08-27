@@ -12,7 +12,6 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
-using System.Windows.Shapes;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
@@ -23,7 +22,7 @@ namespace wpf
     /// </summary>
     public partial class MainWindow : Window
     {
-        readonly string root = System.IO.Path.GetFullPath(System.IO.Path.Join(System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location), "..", "..", "..", ".."));
+        readonly string root = Path.GetFullPath(Path.Join(Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location), "..", "..", "..", ".."));
         readonly int RERUNS = 5;
 
         public MainWindow()
@@ -33,24 +32,24 @@ namespace wpf
 
         async Task<string> ReadFile(String filePath)
         {
-            var content = await File.ReadAllTextAsync(filePath);
+            var content = await Task.Run(() => File.ReadAllText(filePath));
 
             return content;
         }
 
-        async Task<(int,long)> ReadSequentially (string[] files)
+        async Task<(int, long)> ReadSequentially(string[] files)
         {
             var sw = new Stopwatch();
 
             sw.Start();
 
-            for (int i = 0; i < files.Length; i++)
+            foreach (var file in files)
             {
-                await ReadFile(files[i]);
+                await ReadFile(file);
             }
 
             sw.Stop();
-            
+
             return (files.Length, sw.ElapsedMilliseconds);
         }
 
@@ -58,7 +57,7 @@ namespace wpf
         {
             var sw = new Stopwatch();
             sw.Start();
-            var path = System.IO.Path.GetFullPath(System.IO.Path.Join(this.root, "fixtures", folderName));
+            var path = Path.GetFullPath(Path.Join(this.root, "fixtures", folderName));
 
             var files = Directory.GetFiles(path);
 
@@ -68,7 +67,7 @@ namespace wpf
 
         void WriteResults(String size, String results)
         {
-            var path = System.IO.Path.GetFullPath(System.IO.Path.Join(this.root, "wpf-" + size + "-results.csv"));
+            var path = Path.GetFullPath(Path.Join(this.root, "wpf-" + size + "-results.csv"));
 
             File.WriteAllText(path, results);
         }
@@ -78,14 +77,15 @@ namespace wpf
             int testsLength = results[0].Length;
             long[] aggregation = new long[testsLength];
 
-            foreach(var result in results) {
+            foreach (var result in results)
+            {
                 for (int i = 0; i < result.Length; i++)
                 {
-                    aggregation[i] += result[i];                    
+                    aggregation[i] += result[i];
                 }
             };
 
-            for(int i = 0; i < aggregation.Length; i++)
+            for (int i = 0; i < aggregation.Length; i++)
             {
                 aggregation[i] = aggregation[i] / results.Length;
             }
@@ -96,6 +96,7 @@ namespace wpf
         async Task<long[]> Benchmark(string size)
         {
             var (files, timeToList) = ReadFolderContent(size);
+
             var (filesLength, seqTime) = await ReadSequentially(files);
             //const [, parallelTime] = await readInParallel(files);
 
@@ -117,7 +118,8 @@ namespace wpf
 
                 for (int i = 0; i < this.RERUNS; i++)
                 {
-                    Status.Content = $"Running benchmark for size {size} ({i})";
+                    Status.Text = $"Running benchmark for size {size} ({i})";
+
                     var result = await Benchmark(size);
 
                     results.Add(result);
@@ -136,8 +138,9 @@ Parallel read,{parallelTime}";
                 WriteResults(size, stringResults);
             }
 
-            Status.Content = "Done";
-            Start.IsEnabled = true;
+            Start.IsEnabled = false;
+
+            Status.Text = "Done";
         }
     }
 }

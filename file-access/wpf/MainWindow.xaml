@@ -12,6 +12,6 @@
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
         <Button Name="Start" Click="Start_Click" Grid.RowSpan="1">Start</Button>
-        <Label Name="Status" Grid.Column="1" Grid.Row="1">Waiting</Label>
+        <TextBox Name="Status" Grid.Column="1" Grid.Row="1">Waiting</TextBox>
     </Grid>
 </Window>

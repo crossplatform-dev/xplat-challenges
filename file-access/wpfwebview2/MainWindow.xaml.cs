@@ -63,10 +63,10 @@ namespace wpfwebview2
             webView.CoreWebView2.WebMessageReceived += WebMessageReceived;
         }
 
-        void ReadFile(Message message)
+        async Task ReadFile(Message message)
         {
             var location = message.Info;
-            var content = File.ReadAllText(location);
+            var content = await Task.Run(() => File.ReadAllText(location));
 
             AnswerMessage(message.Id, JsonSerializer.Serialize(content));
         }
