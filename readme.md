@@ -2,17 +2,19 @@
 
 TBD
 
-## Tests
+## File access
 
-### File access
-
-Read as many small files as possible in 30 seconds
-- Listing all the files in a folder and reading them sequentially
-- Listing all the files in a folder and reading them using promises
-- Use streams to read the first 1KB
-- Content needs to get to the process running the UI web content (should messages be batched?)
-
-## Running the tests
-
-1. Install prerequesites for all platforms
-2. Prepare the tests running `node prepare.js`
+1. Install prerequesites for all platforms (node, yarn, Visual Studio 2019)
+2. From `file-access/` run `node prepare.js` to create the files to be accessed
+3. Electron:
+   * Run `yarn` to install all dependencies
+   * Run `npm start` to start the application
+   * Press on the `Start` button   
+   WPF WebView2:
+   * Install nuget dependencies
+   * Press F5
+   * Press on the `Start` button
+   WPF:
+   * Press F5
+   * Press on the `Start` button
+   All tests generate a results file in the form of `TECHNOLOGY-FILESIZE-results.csv` under `file-access/`

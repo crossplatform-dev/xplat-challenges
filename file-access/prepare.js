@@ -33,7 +33,12 @@ const prepareFiles = async (filename, targetFolder) => {
 
     const workers = [];
 
+    const fixturesPath = join(__dirname, 'fixtures');
     const target = join(__dirname, 'fixtures', targetFolder);
+
+    try {
+        await mkdirAsync(fixturesPath);
+    } catch{ }
 
     try {
         await mkdirAsync(target);
