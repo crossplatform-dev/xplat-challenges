@@ -20,8 +20,6 @@ const readFolderContent = async (folderName) => {
 
     const time = end - start;
 
-    console.log(`List files: ${time}ms`);
-
     return [files, time];
 };
 
@@ -30,16 +28,10 @@ const readSequentially = async (files) => {
 
     for (let i = 0; i < files.length; i++) {
         await readAsync(files[i], 'utf-8');
-
-        if (i % 100 === 0) {
-            console.log(`${i}/${files.length}`);
-        }
     }
 
     const end = Date.now();
     const time = end - start;
-
-    console.log(`Read contents: ${time}ms`);
 
     return [files.length, time];
 }
@@ -47,10 +39,6 @@ const readSequentially = async (files) => {
 const readParallel = async (files) => {
     if (files.length <= 0) {
         return;
-    }
-
-    if (files.length % 100 === 0) {
-        console.log(files.length);
     }
 
     const file = files.pop();
