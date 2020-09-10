@@ -42,7 +42,7 @@ To run the Electron tests:
 1. Open a terminal into `file-access\electron\`.
 1. Run `yarn` to install all dependencies
 1. Run `yarn electron-forge make` to create the packaged version of the application
-1. Run `node out\electron-win32-x64\electron.exe` 
+1. Run `out\electron-win32-x64\electron.exe` 
 1. Press the "start" button
 1. Once the benchmark is finished, the text in the text area should change to "Done" and `files-access` should have the following 2 new files:
 

@@ -1,4 +1,4 @@
-# Auto generated files
 .vs/
-fixtures/
+.vscode/
+node_modules/
 *.csv

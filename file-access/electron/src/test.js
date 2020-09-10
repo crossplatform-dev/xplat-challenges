@@ -1,18 +1,29 @@
 const fs = require('fs');
 const { join } = require('path')
 const util = require('util');
+const del = require('del');
 
 const readAsync = util.promisify(fs.readFile);
 const writeAsync = util.promisify(fs.writeFile);
 const readdirAsync = util.promisify(fs.readdir);
+const mkdirAsync = util.promisify(fs.mkdir);
 
 const RESULTS_FILE = `results.csv`;
 const PARALLEL_WORKERS = 100;
 const RERUNS = 5;
+const ROOT = join(process.cwd(), '..');
+const FIXTURES_PATH = join(ROOT, 'fixtures');
+const SOURCES_PATH = join(ROOT, 'source-files');
 
+const FILES = 10000;
+
+/**
+ * 
+ * @param {string} folderName 
+ */
 const readFolderContent = async (folderName) => {
     const start = Date.now();
-    const sourceFolder = join(process.cwd(), '..', 'fixtures', folderName);
+    const sourceFolder = join(FIXTURES_PATH, folderName);
     const files = (await readdirAsync(sourceFolder)).map((file) => {
         return join(sourceFolder, file);
     });
@@ -23,6 +34,10 @@ const readFolderContent = async (folderName) => {
     return [files, time];
 };
 
+/**
+ * 
+ * @param {string[]} files 
+ */
 const readSequentially = async (files) => {
     const start = Date.now();
 
@@ -36,7 +51,11 @@ const readSequentially = async (files) => {
     return [files.length, time];
 }
 
-const readParallel = async (files) => {
+/**
+ * 
+ * @param {string[]} files 
+ */
+const read = async (files) => {
     if (files.length <= 0) {
         return;
     }
@@ -45,17 +64,20 @@ const readParallel = async (files) => {
 
     await readAsync(file, 'utf-8');
 
-    return readParallel(files);
+    return read(files);
 };
 
-const readInParallel = async (files) => {
+/**
+ * @param {string[]} files 
+ */
+const readConcurrently = async (files) => {
     const totalFiles = files.length;
     const start = Date.now();
 
     const workers = [];
 
     for (let i = 0; i < PARALLEL_WORKERS; i++) {
-        workers.push(readParallel(files));
+        workers.push(read(files));
     }
 
     await Promise.all(workers);
@@ -66,13 +88,105 @@ const readInParallel = async (files) => {
     return [totalFiles, time];
 };
 
+/**
+ * 
+ * @param {string} content 
+ * @param {string[]} files 
+ */
+const writeFile = async (files, content) => {
+    if (files.length <= 0) {
+        return;
+    }
 
-const benchmark = async (fileSize) => {
+    const filename = files.pop();
+
+    await writeAsync(filename, content, 'utf-8');
+
+    return writeFile(files, content);
+};
+
+/**
+ * @param {string[]} files
+ * @param {string} content 
+ */
+const writeConcurrently = async (files, content) => {
+    const totalFiles = files.length;
+    const start = Date.now();
+
+    const workers = [];
+
+    for (let i = 0; i < PARALLEL_WORKERS; i++) {
+        workers.push(writeFile(files, content));
+    }
+
+    await Promise.all(workers);
+
+    const end = Date.now();
+    const time = end - start;
+
+    return [totalFiles, time];
+};
+
+/**
+ * Creates the files used for reading later concurrently
+ * @param {string} folderName 
+ */
+const writeFiles = async (folderName) => {
+    const start = Date.now();
+    const targetFolder = join(FIXTURES_PATH, folderName);
+
+    try {
+        await mkdirAsync(targetFolder);
+    } catch (e) {
+        console.log(e);
+    }
+
+    const files = [];
+
+    for (let i = 0; i < FILES; i++) {
+        files.push(join(targetFolder, `${folderName}-${i}.txt`));
+    }
+
+    const content = await readAsync(join(SOURCES_PATH, `${folderName}.txt`), 'utf-8');
+
+    await writeConcurrently(files, content);
+
+    const end = Date.now();
+
+    const time = end - start;
+
+    return [files, time];
+};
+
+const deleteFixtures = async () => {
+    const exists = fs.existsSync(FIXTURES_PATH);
+
+    if (exists) {
+        try {
+            await del(['fixtures'], { force: true, cwd: ROOT });
+        } catch (e) {
+            console.log(e);
+        }
+    }
+
+    await mkdirAsync(FIXTURES_PATH);
+};
+
+/**
+ * 
+ * @param {string} fileSize 
+ * @returns {[number,number,number,number]}
+ */
+const benchmark = async (fileSize) => {    
+    await deleteFixtures();    
+    const [, timeToWrite] = await writeFiles(fileSize);
+    
+    // Read files in different modes
     const [files, timeToList] = await readFolderContent(fileSize);
     const [, seqTime] = await readSequentially(files);
-    const [, parallelTime] = await readInParallel(files);
+    const [, parallelTime] = await readConcurrently(files);
 
-    return [timeToList, seqTime, parallelTime];
+    return [timeToWrite, timeToList, seqTime, parallelTime];
 };
 
 /**
@@ -102,6 +216,7 @@ const calculateAverage = (results) => {
 };
 
 const run = async () => {
+    document.getElementById('start').setAttribute('disabled', 'disabled');
     const fileSizes = ['4k', '1mb'];
 
     while (fileSizes.length > 0) {
@@ -115,15 +230,18 @@ const run = async () => {
             results.push(result);
         }
 
-        const [timeToList, seqTime, parallelTime] = calculateAverage(results);
+        const [timeToWrite, timeToList, seqTime, parallelTime] = calculateAverage(results);
 
-        await writeAsync(join(process.cwd(), '..',`electron-${size}-${RESULTS_FILE}`),
+        await writeAsync(join(process.cwd(), '..', `electron-${size}-${RESULTS_FILE}`),
             `Action,Time elapsed (ms)
+Write files,${timeToWrite}
 Read dir,${timeToList}
 Sequential read,${seqTime}
 Parallel read,${parallelTime}
 `, 'utf-8');
     }
+
+    document.getElementById('start').removeAttribute('disabled');
 
     document.getElementById('status').textContent = `Done`;
 };
