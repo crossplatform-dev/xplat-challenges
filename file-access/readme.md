@@ -21,16 +21,6 @@ After clonning the repo make sure to install:
 1. [Visual Studio 2019](https://visualstudio.microsoft.com/downloads/)
 1. Latest version of [Edge Canary](https://www.microsoftedgeinsider.com/en-us/download)
 
-Once you have everything installed, from a command prompt in ` file-access\` run
-
-```terminal
-node prepare.js
-```
-
-This will create the folders `file-access\fixtures\4k` and  `file-access\fixtures\1mb` with 10,000 files each.
-
-These are the files that will be read during the tests.
-
 ## Electron
 
 To run the Electron tests:
