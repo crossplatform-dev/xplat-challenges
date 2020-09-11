@@ -26,3 +26,13 @@ times in ms, average of 5 runs
 In WebView 2 files are read in C# and then a message is sent to the WebView with the contents.
 "Concurrent read" reads up to 100 files concurrently.
 
+# CPU
+
+Goal is to calculate all the primer numbers under 10,000,000 while still having the UI being responsive. The UI is updated about 250ms.
+
+Time in ms, average of 5 runs.
+
+|          | 10,000,000 |
+| ---------|------------|
+| Electron |      3,290 |
+| WPF      |      3,328 |

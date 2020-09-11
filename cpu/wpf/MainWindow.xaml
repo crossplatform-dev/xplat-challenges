@@ -1,0 +1,21 @@
+﻿<Window x:Class="wpf.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:wpf"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition></RowDefinition>
+            <RowDefinition></RowDefinition>
+            <RowDefinition></RowDefinition>
+            <RowDefinition></RowDefinition>
+        </Grid.RowDefinitions>
+        <Label FontWeight="Bold" FontSize="24" Grid.Row="0">Calculate prime numbers</Label>
+        <Button Name="Start" Click="Start_Click" Grid.Row="1">Start</Button>
+        <TextBlock Name="Status" Grid.Row="2"></TextBlock>
+        <TextBlock Name="Results" Grid.Row="3"></TextBlock>
+    </Grid>
+</Window>
