@@ -1,5 +1,6 @@
 ﻿const PARALLEL_WORKERS = 100;
-const RERUNS = 1;
+const RERUNS = 5;
+const FILES = 10000;
 
 const callbacks = new Map();
 
@@ -45,8 +46,36 @@ const onMessage = (evt) => {
     } catch{ }
 
     callback(payload);
-    
 };
+
+const deleteFixtures = async () => {
+    const start = Date.now();
+
+    return new Promise((resolve) => {
+
+        sendAction('deleteFixtures', "", () => {
+            const end = Date.now();
+            const time = end - start;
+
+            resolve(time);
+        });
+    });
+};
+
+const createFolder = async (folder) => {
+    const start = Date.now();
+
+    return new Promise((resolve) => {
+
+        sendAction('createFolder', folder, () => {
+            const end = Date.now();
+            const time = end - start;
+
+            resolve(time);
+        });
+    });
+};
+
 
 const readFolderContent = (folderName) => {
     const start = Date.now();
@@ -117,13 +146,87 @@ const readInParallel = async (files) => {
     return [totalFiles, time];
 };
 
+const writeAsync = (file, content) => {
+    return new Promise((resolve) => {
+        sendAction('writeFile', JSON.stringify({ path: file, content: content }), (content) => {
+            resolve(content);
+        });
+    });
+};
+
+const writeFile = async (files, content) => {
+    if (files.length <= 0) {
+        return;
+    }
+
+    const filename = files.pop();
+
+    await writeAsync(filename, content, 'utf-8');
+
+    return writeFile(files, content);
+};
+
+/**
+ * @param {string[]} files
+ * @param {string} content 
+ */
+const writeConcurrently = async (files, content) => {
+    const totalFiles = files.length;
+    const start = Date.now();
+
+    const workers = [];
+
+    for (let i = 0; i < PARALLEL_WORKERS; i++) {
+        workers.push(writeFile(files, content));
+    }
+
+    await Promise.all(workers);
+
+    const end = Date.now();
+    const time = end - start;
+
+    return [totalFiles, time];
+};
+
+/**
+ * Creates the files used for reading later concurrently
+ * @param {string} folderName 
+ */
+const writeFiles = async (folderName) => {
+    const start = Date.now();
+
+    const targetFolder = `fixtures\\${folderName}`;
+   
+    await createFolder(targetFolder);
+    
+    const files = [];
+
+    for (let i = 0; i < FILES; i++) {
+        files.push(`${targetFolder}\\${folderName}-${i}.txt`);
+    }
+
+    const content = await readFile(`source-files\\${folderName}.txt`);
+
+    await writeConcurrently(files, content);
+
+    const end = Date.now();
+
+    const time = end - start;
+
+    return [files, time];
+};
+
+
 
 const benchmark = async (fileSize) => {
+    await deleteFixtures();
+
+    const [, timeToWrite] = await writeFiles(fileSize);
     const [files, timeToList] = await readFolderContent(fileSize);
     const [, seqTime] = await readSequentially(files);
     const [, parallelTime] = await readInParallel(files);
      
-    return [timeToList, seqTime, parallelTime];
+    return [timeToWrite, timeToList, seqTime, parallelTime];
 };
 
 /**
@@ -175,10 +278,11 @@ const run = async () => {
             results.push(result);
         }
 
-        const [timeToList, seqTime, parallelTime] = calculateAverage(results);
+        const [timeToWrite, timeToList, seqTime, parallelTime] = calculateAverage(results);
 
         const message =
             `Action,Time elapsed (ms)
+Write files,${timeToWrite}
 Read dir,${timeToList}
 Sequential read,${seqTime}
 Parallel read,${parallelTime}

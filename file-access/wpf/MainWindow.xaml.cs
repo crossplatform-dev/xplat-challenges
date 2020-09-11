@@ -2,19 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
-using System.Threading;
 
 namespace wpf
 {
@@ -23,22 +13,35 @@ namespace wpf
     /// </summary>
     public partial class MainWindow : Window
     {
-        readonly string root = Path.GetFullPath(Path.Join(Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location), "..", "..", "..", ".."));
+        readonly static string ROOT = Path.GetFullPath(Path.Join(Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location), "..", "..", "..", ".."));
+        readonly static string FIXTURES_PATH = Path.GetFullPath(Path.Join(ROOT, "fixtures"));
+        readonly static string SOURCES_PATH = Path.GetFullPath(Path.Join(ROOT, "source-files"));
         readonly int RERUNS = 5;
         readonly int PARALLEL_WORKERS = 100;
+        readonly int FILES = 10000;
 
         public MainWindow()
         {
             InitializeComponent();
         }
 
-        async Task<string> ReadFile(String filePath)
+        async Task<string> ReadFileAsync(String path)
         {
             // The Async version blocks the UI thread: https://stackoverflow.com/questions/63217657/why-file-readalllinesasync-blocks-the-ui-thread
-            var content = await Task.Run(() => File.ReadAllText(filePath));
+            var content = await Task.Run(() => File.ReadAllText(path));
 
             return content;
         }
+
+        async Task WriteFileAsync(String path, String content)
+        {
+            await Task.Run(() => File.WriteAllText(path, content));
+        }
+
+        async Task CreateDirectoryAsync(String path)
+        {
+            await Task.Run(() => Directory.CreateDirectory(path));
+        } 
 
         async Task<(int, long)> ReadSequentially(string[] files)
         {
@@ -48,7 +51,7 @@ namespace wpf
 
             foreach (var file in files)
             {
-                await ReadFile(file);
+                await ReadFileAsync(file);
             }
 
             sw.Stop();
@@ -60,7 +63,7 @@ namespace wpf
         {
             var sw = new Stopwatch();
             sw.Start();
-            var path = Path.GetFullPath(Path.Join(this.root, "fixtures", folderName));
+            var path = Path.GetFullPath(Path.Join(FIXTURES_PATH, folderName));
 
             var files = Directory.GetFiles(path);
 
@@ -78,7 +81,7 @@ namespace wpf
             var filePath = files[0];
             files.RemoveAt(0);
 
-            await ReadFile(filePath);
+            await ReadFileAsync(filePath);
             
             await ReadParallel(files);
         }
@@ -121,9 +124,71 @@ namespace wpf
             return (files.Length, sw.ElapsedMilliseconds);
         }
 
+        async Task WriteParallel(List<string> files, String content)
+        {
+            if (files.Count == 0)
+            {
+                return;
+            }
+
+            var filePath = files[0];
+            files.RemoveAt(0);
+
+            await WriteFileAsync(filePath, content);
+
+            await WriteParallel(files, content);
+        }
+
+
+        async Task<(int, long)> WriteConcurrently(String size)
+        {
+            var sw = new Stopwatch();
+            sw.Start();
+
+            var targetFolder = Path.GetFullPath(Path.Join(FIXTURES_PATH, size)); ;
+
+            await CreateDirectoryAsync(targetFolder);
+            
+
+            /* Creating workers that call themselves recursively until all files are read */
+            var workers = new List<Task>();
+            var filesList = new List<string>();
+            
+            for(var i =0; i< FILES; i++)
+            {
+                filesList.Add(Path.Join(targetFolder, $"{size}-{i}.txt"));
+            }
+                        
+            var content = await ReadFileAsync(Path.GetFullPath(Path.Join(SOURCES_PATH, $"{size}.txt")));
+            
+            
+            for (int i = 0; i < this.PARALLEL_WORKERS; i++)
+            {
+                workers.Add(WriteParallel(filesList, content));
+            }
+            await Task.WhenAll(workers.ToArray());
+
+            sw.Stop();
+
+            return (filesList.Count, sw.ElapsedMilliseconds);
+        }
+                
+        async Task DeleteFixtures()
+        {
+            try
+            {
+                await Task.Run(() => Directory.Delete(FIXTURES_PATH, true));
+            }
+            catch(Exception e) {
+                Console.WriteLine("The process failed: {0}", e.Message);
+            }
+
+            await Task.Run(() => Directory.CreateDirectory(FIXTURES_PATH));
+        }
+
         void WriteResults(String size, String results)
         {
-            var path = Path.GetFullPath(Path.Join(this.root, "wpf-" + size + "-results.csv"));
+            var path = Path.GetFullPath(Path.Join(ROOT, "wpf-" + size + "-results.csv"));
 
             File.WriteAllText(path, results);
         }
@@ -151,13 +216,17 @@ namespace wpf
 
         async Task<long[]> Benchmark(string size)
         {
+            await DeleteFixtures();
+
+            var (writtenFiles, timeToWrite) = await WriteConcurrently(size);
+
             var (files, timeToList) = ReadFolderContent(size);
 
             var (filesLength, seqTime) = await ReadSequentially(files);
             // For some reason parallel still blocks the UI at some points 🤔
             var (filesLength2, parallelTime) = await ReadInParallel(files);
 
-            return new long[] { timeToList, seqTime, parallelTime };
+            return new long[] { timeToWrite, timeToList, seqTime, parallelTime };
         }
 
         private async void Start_Click(object sender, RoutedEventArgs e)
@@ -183,11 +252,13 @@ namespace wpf
                 }
 
                 var average = CalculateAverage(results.ToArray());
-                var timeToList = average[0];
-                var seqTime = average[1];
-                var parallelTime = average[2];
+                var timeToWrite = average[0];
+                var timeToList = average[1];
+                var seqTime = average[2];
+                var parallelTime = average[3];
 
                 var stringResults = $@"Action,Time elapsed(ms)
+Write files,{timeToWrite}
 Read dir,{timeToList}
 Sequential read,{seqTime}
 Parallel read,{parallelTime}";

@@ -1,20 +1,28 @@
-Time to read 10,000 files of 4k each (times in ms, average of 5 runs)
+# File access
 
-|          | Read dir | Sequential Read | Parallel Read |
-| ---------| ---------|-----------------|---------------|
-| Electron |       19 |           7,963 |           862 |
-| WebView2 |      158 |          13,097 |         4,643 |
-| WPF mutex|        8 |           2,896 |           810 |
-| WPF recur|        6 |           2,153 |           508 |
+Goal is to read and write large numbers of files of different sizes (4k and 1MB) without blocking the UI thread.
+`async/await` is used in JavaScript and C# to perform all I/O operations.
 
-Time to read 10,000 files of 1Mb each (times in ms, average of 5 runs)
+## Time to write and read 10,000 files of 4k each
 
-|          | Read dir | Sequential Read | Parallel Read |
-| ---------| ---------|-----------------|---------------|
-| Electron |       18 |          23,711 |         1,939 |
-| WebView2 |       64 |          67,099 |        40,402 |
-| WPF mutex|        4 |           8,025 |         2,652 |
-| WPF recur|        4 |           7,879 |         2,705 |
+times in ms, average of 5 runs
 
+|          | Write files | Read dir | Sequential Read | Concurrent Read |
+| ---------|-------------|----------|-----------------|-----------------|
+| Electron |       6,218 |       21 |           8,751 |           1,059 |
+| WebView2 |      10,585 |       82 |          13,470 |           5,936 |
+| WPF recur|       4,101 |        4 |           1,848 |             448 |
 
-In WebView 2 files are read in C# and then a message is sent to the WebView with the contents.Parallel read is done requesting 100 files at the same time tops in JS and in C#Going to test on just C# probably tomorrow to see what the difference is.
+## Time to write and read 10,000 files of 1Mb each
+
+times in ms, average of 5 runs
+
+|          | Write files | Read dir | Sequential Read | Concurrent Read |
+| ---------|-------------|----------|-----------------|-----------------|
+| Electron |      29,215 |       34 |          17,518 |           4,602 |
+| WebView2 |      43,250 |       98 |          86,222 |          35,753 |
+| WPF recur|      25,729 |        6 |          29,536 |           3,417 |
+
+In WebView 2 files are read in C# and then a message is sent to the WebView with the contents.
+"Concurrent read" reads up to 100 files concurrently.
+
