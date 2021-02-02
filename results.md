@@ -36,3 +36,17 @@ Time in ms, average of 5 runs.
 | ---------|------------|
 | Electron |      3,290 |
 | WPF      |      3,328 |
+
+# IPC
+
+Goal is to measure the speed of sending 1,000 and 10,000 messages between
+different processes.
+
+Time in ms, average of 5 runs.
+
+## Roundtrip: Renderer -> Main -> Renderer
+
+|          |  1,000 | 10,000 |
+| ---------|--------|--------|
+| Electron |     49 |    400 |
+| WV2      |    288 |  2,806 |

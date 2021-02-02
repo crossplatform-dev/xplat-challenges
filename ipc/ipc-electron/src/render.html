@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+</head>
+
+<body>
+
+  <p>This Electron app tests various latencies for different IPC roundtrip scenarios.<strong>Time reported in total
+      milliseconds.</strong></p>
+    <input type="text" id="messages" value="1000"/>
+  <button id="start">start</button>
+  <label id="results"></label>
+
+  <p>
+    Node.js
+    <script>document.write(process.versions.node)</script>
+    Chromium
+    <script> document.write(process.versions.chrome)</script>
+    Electron
+    <script> document.write(process.versions.electron)
+    </script>
+  </p>
+  <script src="render.js"></script>
+</body>
+
+</html>

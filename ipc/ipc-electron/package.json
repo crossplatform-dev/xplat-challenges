@@ -1,0 +1,21 @@
+{
+  "name": "ipc-electron",
+  "version": "1.0.0",
+  "description": "Electron IPC tests",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "author": {
+    "name": "Antón Molleda",
+    "email": "amolleda@gmail.com"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/molant/xplat-benchmarks/issues"
+  },
+  "homepage": "https://github.com/molant/xplat-benchmarks#readme",
+  "devDependencies": {
+    "electron": "^11.2.1"
+  }
+}
