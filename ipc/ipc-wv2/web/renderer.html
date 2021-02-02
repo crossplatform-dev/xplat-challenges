@@ -1,0 +1,63 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+</head>
+
+<body>
+
+    <p>
+        This WebView2 app tests various latencies for different IPC roundtrip scenarios.<strong>
+            Time reported in total
+            milliseconds.
+        </strong>
+    </p>
+    <input type="text" id="messages" value="1000" />
+    <button id="start">start</button>
+    <label id="results"></label>
+
+    <script>        
+        let totalMessages = 0;
+        const messages = new Map();
+        let startTime;
+        let received;
+
+        const start = () => {            
+            totalMessages = parseInt(document.getElementById('messages').value);
+            received = 0;
+            startTime = Date.now();
+            messages.clear();
+
+            for (let id = 1; id <= totalMessages; id++) {                
+                const message = { id, start: Date.now(), duration: 0 };
+                messages.set(id, message);
+                
+                window.chrome.webview.postMessage(message);
+            }
+        }
+
+        document.getElementById('start').addEventListener('click', start);
+
+        window.chrome.webview.addEventListener('message', ({ data }, arg) => {
+            received++;
+            const end = Date.now();
+            const message = messages.get(data.id);
+            message.duration = end - message.start;
+
+            if (received === totalMessages) {
+                const totalTime = end - startTime;
+                console.log(`Total time: ${totalTime}`);
+
+                let durations = 0;
+                for (const message of messages.values()) {
+                    durations += message.duration;
+                }
+                const average = durations / messages.size;
+                document.getElementById('results').innerText = `Total: ${totalTime} - avg: ${average}`;
+            }
+        });
+    </script>
+</body>
+
+</html>
