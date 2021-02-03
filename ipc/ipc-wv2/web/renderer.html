@@ -14,49 +14,100 @@
         </strong>
     </p>
     <input type="text" id="messages" value="1000" />
-    <button id="start">start</button>
-    <label id="results"></label>
+    <div>
+        <button id="start">start burst</button>
+        <label id="results"></label>
+    </div>
+    <div>
+        <button id="start-sequential">start sequential</button>
+        <label id="results-sequential"></label>
+    </div>
 
-    <script>        
+    <script>
         let totalMessages = 0;
         const messages = new Map();
         let startTime;
         let received;
 
-        const start = () => {            
+        const startBurst = () => {
             totalMessages = parseInt(document.getElementById('messages').value);
             received = 0;
             startTime = Date.now();
             messages.clear();
 
-            for (let id = 1; id <= totalMessages; id++) {                
+            const onMessage = ({ data: arg }) => {
+                received++;
+                const end = Date.now();
+                const message = messages.get(arg.id);
+                message.duration = end - message.start;
+
+                if (received === totalMessages) {
+                    window.chrome.webview.removeEventListener('message', onMessage);
+                    const totalTime = end - startTime;
+                    console.log(`Total time: ${totalTime}`);
+
+
+                    let durations = 0;
+                    for (const message of messages.values()) {
+                        durations += message.duration;
+                    }
+                    const average = durations / messages.size;
+                    document.getElementById('results').innerText = `Total: ${totalTime}ms - avg message roundtrip: ${average}ms`;
+                }
+            }
+
+            window.chrome.webview.addEventListener('message', onMessage);
+
+            for (let id = 1; id <= totalMessages; id++) {
                 const message = { id, start: Date.now(), duration: 0 };
                 messages.set(id, message);
-                
                 window.chrome.webview.postMessage(message);
             }
-        }
+        };
 
-        document.getElementById('start').addEventListener('click', start);
+        document.getElementById('start').addEventListener('click', startBurst);
 
-        window.chrome.webview.addEventListener('message', ({ data }, arg) => {
-            received++;
-            const end = Date.now();
-            const message = messages.get(data.id);
-            message.duration = end - message.start;
+        const startSequential = () => {
+            totalMessages = parseInt(document.getElementById('messages').value);
+            received = 0;
+            startTime = performance.now();
+            messages.clear();
 
-            if (received === totalMessages) {
-                const totalTime = end - startTime;
-                console.log(`Total time: ${totalTime}`);
+            const sendMessage = (id) => {
+                const message = { id, start: performance.now(), duration: 0 };
+                messages.set(id, message);
+                window.chrome.webview.postMessage(message);
+            };
 
-                let durations = 0;
-                for (const message of messages.values()) {
-                    durations += message.duration;
+            const onMessage = ({ data: arg }) => {
+                received++;
+                const end = performance.now();
+                const message = messages.get(arg.id);
+                message.duration = end - message.start;
+
+                if (received === totalMessages) {
+                    window.chrome.webview.removeEventListener('message', onMessage);
+                    const totalTime = end - startTime;
+                    console.log(`Total time: ${totalTime}`);
+
+                    let durations = 0;
+                    for (const message of messages.values()) {
+                        durations += message.duration;
+                    }
+                    const average = durations / messages.size;
+                    document.getElementById('results-sequential').innerText = `Total: ${totalTime.toFixed(2)}ms - avg message roundtrip: ${average.toFixed(2)}ms`;
+                } else {
+                    sendMessage(received + 1);
                 }
-                const average = durations / messages.size;
-                document.getElementById('results').innerText = `Total: ${totalTime} - avg: ${average}`;
             }
-        });
+
+            window.chrome.webview.addEventListener('message', onMessage);
+
+            sendMessage(received + 1);
+        };
+
+        document.getElementById('start-sequential').addEventListener('click', startSequential);
+
     </script>
 </body>
 

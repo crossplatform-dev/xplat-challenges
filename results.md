@@ -39,14 +39,29 @@ Time in ms, average of 5 runs.
 
 # IPC
 
-Goal is to measure the speed of sending 1,000 and 10,000 messages between
-different processes.
-
+Goal is to measure the speed of IPC under different circumstances.
 Time in ms, average of 5 runs.
 
-## Roundtrip: Renderer -> Main -> Renderer
+## Roundtrip: Renderer -> Main -> Renderer in burst
+
+The time it takes to send roundtrip 1,000 and 10,000 messages at the same time
+This allow us to see how the pipe handles congestion.
 
 |          |  1,000 | 10,000 |
 | ---------|--------|--------|
 | Electron |     49 |    400 |
 | WV2      |    288 |  2,806 |
+
+## Roundtrip: Renderer -> Main -> Renderer sequentially
+
+The time it takes to send roundtrip 1,000 and 10,000 messages one by one.
+This measures the raw speed of sending messages under ideal circumstances.
+
+|          |  1,000 / avg    |   10,000 / avg    |
+| ---------|-----------------|-------------------|
+| Electron |  334ms / 0.33ms |  2,837ms / 0.28ms |
+| WV2      | 1432ms / 1.43ms | 13,613ms / 1.35ms |
+
+As expected, the average speed of the message is relatively constant regardless of
+the number of messages sent.
+

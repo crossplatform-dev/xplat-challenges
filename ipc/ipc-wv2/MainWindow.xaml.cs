@@ -10,9 +10,9 @@ namespace ipc_wv2
 
     public class Message
     {
-        public long id { get; set; }
-        public long start { get; set; }
-        public long duration { get; set; }
+        public double id { get; set; }
+        public double start { get; set; }
+        public double duration { get; set; }
     }
 
 
