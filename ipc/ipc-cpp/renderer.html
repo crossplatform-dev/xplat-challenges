@@ -1,0 +1,114 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+</head>
+
+<body>
+
+    <p>
+        This WebView2 C++ app tests various latencies for different IPC roundtrip scenarios.<strong>
+            Time reported in total
+            milliseconds.
+        </strong>
+    </p>
+    <input type="text" id="messages" value="1000" />
+    <div>
+        <button id="start">start burst</button>
+        <label id="results"></label>
+    </div>
+    <div>
+        <button id="start-sequential">start sequential</button>
+        <label id="results-sequential"></label>
+    </div>
+
+    <script>
+        let totalMessages = 0;        
+        let startTime;
+        let received;
+
+        const startBurst = () => {
+            totalMessages = parseInt(document.getElementById('messages').value);
+            const messages = [];
+            received = 0;
+            startTime = Date.now();            
+
+            const onMessage = ({ data: arg }) => {
+                received++;
+                const end = Date.now();
+                const message = JSON.parse(arg);
+                message.duration = end - message.start;
+                messages.push(message);
+
+                if (received === totalMessages) {
+                    window.chrome.webview.removeEventListener('message', onMessage);
+                    const totalTime = end - startTime;
+                    console.log(`Total time: ${totalTime}`);
+
+
+                    let durations = 0;
+                    for (const message of messages) {
+                        durations += message.duration;
+                    }
+                    const average = durations / messages.length;
+                    document.getElementById('results').innerText = `Total: ${totalTime}ms - avg message roundtrip: ${average}ms`;
+                }
+            }
+
+            window.chrome.webview.addEventListener('message', onMessage);
+
+            for (let id = 1; id <= totalMessages; id++) {
+                const message = { id, start: Date.now(), duration: 0 };
+                window.chrome.webview.postMessage(JSON.stringify(message));
+            }
+        };
+
+        document.getElementById('start').addEventListener('click', startBurst);
+
+        const startSequential = () => {
+            totalMessages = parseInt(document.getElementById('messages').value);
+            received = 0;
+            startTime = performance.now();            
+            const messages = [];
+
+            const sendMessage = (id) => {
+                const message = { id, start: performance.now(), duration: 0 };
+
+                window.chrome.webview.postMessage(JSON.stringify(message));
+            };
+
+            const onMessage = ({ data: arg }) => {
+                received++;
+                const end = performance.now();                
+                const message = JSON.parse(arg);
+                message.duration = end - message.start;
+                messages.push(message);
+
+                if (received === totalMessages) {
+                    window.chrome.webview.removeEventListener('message', onMessage);
+                    const totalTime = end - startTime;
+                    console.log(`Total time: ${totalTime}`);
+
+                    let durations = 0;
+                    for (const message of messages) {
+                        durations += message.duration;
+                    }
+                    const average = durations / messages.length;
+                    document.getElementById('results-sequential').innerText = `Total: ${totalTime.toFixed(2)}ms - avg message roundtrip: ${average.toFixed(2)}ms`;
+                } else {
+                    sendMessage(received + 1);
+                }
+            }
+
+            window.chrome.webview.addEventListener('message', onMessage);
+
+            sendMessage(received + 1);
+        };
+
+        document.getElementById('start-sequential').addEventListener('click', startSequential);
+
+    </script>
+</body>
+
+</html>

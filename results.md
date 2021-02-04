@@ -49,8 +49,9 @@ This allow us to see how the pipe handles congestion.
 
 |          |  1,000 | 10,000 |
 | ---------|--------|--------|
-| Electron |     49 |    400 |
-| WV2      |    288 |  2,806 |
+| Electron |   49ms |    400ms |
+| WV2 (C#) |  288ms |  2,806ms |
+| WV2 (C++)|  264ms |  1,794ms |
 
 ## Roundtrip: Renderer -> Main -> Renderer sequentially
 
@@ -60,8 +61,11 @@ This measures the raw speed of sending messages under ideal circumstances.
 |          |  1,000 / avg    |   10,000 / avg    |
 | ---------|-----------------|-------------------|
 | Electron |  334ms / 0.33ms |  2,837ms / 0.28ms |
-| WV2      | 1432ms / 1.43ms | 13,613ms / 1.35ms |
+| WV2 (C#) | 1432ms / 1.43ms | 13,613ms / 1.35ms |
+| WV2 (C++)|  943ms / 0.93ms | 10,782ms / 1.06ms |
 
 As expected, the average speed of the message is relatively constant regardless of
 the number of messages sent.
-
+**Note:** The C++ version stringifyes and parses on the JavaScript side because
+my C++ skill are non-existent and I've been unable to send an object and 
+parse/serialize in C++.
