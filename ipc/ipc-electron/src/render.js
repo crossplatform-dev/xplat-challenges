@@ -1,34 +1,31 @@
 const { ipcRenderer } = require('electron')
 
-let totalMessages = 0;
-const messages = new Map();
-let startTime;
-let received;
-
 const startBurst = () => {
-  totalMessages = parseInt(document.getElementById('messages').value);
-  received = 0;
-  startTime = Date.now();
-  messages.clear();
+  const totalMessages = parseInt(document.getElementById('messages').value);
+  let received = 0;
+  const startTime = Date.now();
+  const messages = [];
 
-  const onMessage = (event, arg) => {
-    received++;
+  const onMessage = (event, arg) => {    
     const end = Date.now();
-    const message = messages.get(arg.id);
+    const message = arg;
+    
     message.duration = end - message.start;
+    messages.push(message);
+    
+    received++;
 
-    if (received === totalMessages) {
-      ipcRenderer.removeListener('asynchronous-reply', onMessage);
+    if (received === totalMessages) {      
       const totalTime = end - startTime;
-      console.log(`Total time: ${totalTime}`);
-
-
       let durations = 0;
-      for (const message of messages.values()) {
+
+      ipcRenderer.removeListener('asynchronous-reply', onMessage);
+      
+      for (const message of messages) {
         durations += message.duration;
       }
-      const average = durations / messages.size;
-      document.getElementById('results').innerText = `Total: ${totalTime}ms - avg message roundtrip: ${average}ms`;
+      const average = durations / messages.length;
+      document.getElementById('results').innerText = `Total: ${totalTime.toFixed(2)}ms - avg message roundtrip: ${average.toFixed(2)}ms`;
     }
   }
 
@@ -36,7 +33,7 @@ const startBurst = () => {
 
   for (let id = 1; id <= totalMessages; id++) {
     const message = { id, start: Date.now(), duration: 0 };
-    messages.set(id, message);
+
     ipcRenderer.send('asynchronous-message', message);
   }
 };
@@ -44,36 +41,40 @@ const startBurst = () => {
 document.getElementById('start').addEventListener('click', startBurst);
 
 const startSequential = () => {
-  totalMessages = parseInt(document.getElementById('messages').value);
-  received = 0;
-  startTime = performance.now();
-  messages.clear();
-
+  const totalMessages = parseInt(document.getElementById('messages').value);
+  let received = 0;
+  const messages = [];
+  const startTime = performance.now();
+  
   const sendMessage = (id) => {
     const message = { id, start: performance.now(), duration: 0 };
-    messages.set(id, message);
+
     ipcRenderer.send('asynchronous-message', message);
   };
 
   const onMessage = (event, arg) => {
-    received++;
     const end = performance.now();
-    const message = messages.get(arg.id);
+    const message = arg;
+    
     if (!message) {
       return;
     }
+
     message.duration = end - message.start;
+    messages.push(message);
+
+    received++;
 
     if (received === totalMessages) {
-      ipcRenderer.removeListener('asynchronous-reply', onMessage);
       const totalTime = end - startTime;
-      console.log(`Total time: ${totalTime}`);
-
       let durations = 0;
-      for (const message of messages.values()) {
+
+      ipcRenderer.removeListener('asynchronous-reply', onMessage);
+      
+      for (const message of messages) {
         durations += message.duration;
       }
-      const average = durations / messages.size;
+      const average = durations / messages.length;
       document.getElementById('results-sequential').innerText = `Total: ${totalTime.toFixed(2)}ms - avg message roundtrip: ${average.toFixed(2)}ms`;
     } else {
       sendMessage(received + 1);

@@ -8,7 +8,7 @@
 <body>
 
     <p>
-        This WebView2 app tests various latencies for different IPC roundtrip scenarios.<strong>
+        This WebView2 C# app tests various latencies for different IPC roundtrip scenarios.<strong>
             Time reported in total
             milliseconds.
         </strong>
@@ -22,37 +22,36 @@
         <button id="start-sequential">start sequential</button>
         <label id="results-sequential"></label>
     </div>
+    <div>
+        <button id="start-host-object">start host object</button>
+        <label id="results-host-object"></label>
+    </div>
 
     <script>
-        let totalMessages = 0;
-        const messages = new Map();
-        let startTime;
-        let received;
-
         const startBurst = () => {
-            totalMessages = parseInt(document.getElementById('messages').value);
-            received = 0;
-            startTime = Date.now();
-            messages.clear();
+            const totalMessages = parseInt(document.getElementById('messages').value);
+            let received = 0;
+            const startTime = Date.now();
+            const messages = [];
 
             const onMessage = ({ data: arg }) => {
-                received++;
                 const end = Date.now();
-                const message = messages.get(arg.id);
+                const message = arg;
+
                 message.duration = end - message.start;
+                messages.push(message);
+
+                received++;
 
                 if (received === totalMessages) {
-                    window.chrome.webview.removeEventListener('message', onMessage);
                     const totalTime = end - startTime;
-                    console.log(`Total time: ${totalTime}`);
-
-
                     let durations = 0;
-                    for (const message of messages.values()) {
+
+                    for (const message of messages) {
                         durations += message.duration;
                     }
-                    const average = durations / messages.size;
-                    document.getElementById('results').innerText = `Total: ${totalTime}ms - avg message roundtrip: ${average}ms`;
+                    const average = durations / messages.length;
+                    document.getElementById('results').innerText = `Total: ${totalTime.toFixed(2)}ms - avg message roundtrip: ${average.toFixed(2)}ms`;
                 }
             }
 
@@ -60,7 +59,7 @@
 
             for (let id = 1; id <= totalMessages; id++) {
                 const message = { id, start: Date.now(), duration: 0 };
-                messages.set(id, message);
+                
                 window.chrome.webview.postMessage(message);
             }
         };
@@ -68,33 +67,36 @@
         document.getElementById('start').addEventListener('click', startBurst);
 
         const startSequential = () => {
-            totalMessages = parseInt(document.getElementById('messages').value);
-            received = 0;
-            startTime = performance.now();
-            messages.clear();
-
+            const totalMessages = parseInt(document.getElementById('messages').value);
+            let received = 0;
+            const messages = [];
+            const startTime = performance.now();
+                        
             const sendMessage = (id) => {
                 const message = { id, start: performance.now(), duration: 0 };
-                messages.set(id, message);
+                
                 window.chrome.webview.postMessage(message);
             };
 
-            const onMessage = ({ data: arg }) => {
-                received++;
+            const onMessage = ({ data: arg }) => {                
                 const end = performance.now();
-                const message = messages.get(arg.id);
+                const message = arg;
+
                 message.duration = end - message.start;
+                messages.push(message);
+
+                received++;
 
                 if (received === totalMessages) {
-                    window.chrome.webview.removeEventListener('message', onMessage);
                     const totalTime = end - startTime;
-                    console.log(`Total time: ${totalTime}`);
-
                     let durations = 0;
-                    for (const message of messages.values()) {
+
+                    window.chrome.webview.removeEventListener('message', onMessage);
+                    
+                    for (const message of messages) {
                         durations += message.duration;
                     }
-                    const average = durations / messages.size;
+                    const average = durations / messages.length;
                     document.getElementById('results-sequential').innerText = `Total: ${totalTime.toFixed(2)}ms - avg message roundtrip: ${average.toFixed(2)}ms`;
                 } else {
                     sendMessage(received + 1);
@@ -108,6 +110,32 @@
 
         document.getElementById('start-sequential').addEventListener('click', startSequential);
 
+        const startHostObject = async () => {
+            const totalMessages = parseInt(document.getElementById('messages').value);
+
+            const bridge = chrome.webview.hostObjects.bridge;
+            const start = performance.now();
+            const messages = [];
+
+            for (let id = 1; id <= totalMessages; id++) {
+                const message = { id, start: performance.now(), duration: 0 };
+                const messageReceived = JSON.parse(await bridge.Func(JSON.stringify(message)));
+                messageReceived.duration = performance.now() - messageReceived.start;
+                messages.push(messageReceived);
+            }
+
+            const totalTime = performance.now() - start;
+
+            let durations = 0;
+            for (const message of messages) {
+                durations += message.duration;
+            }
+            const average = durations / messages.length;
+
+            document.getElementById('results-host-object').innerText = `Total: ${totalTime.toFixed(2)}ms - avg message roundtrip: ${average.toFixed(2)}ms`;
+        };
+
+        document.getElementById('start-host-object').addEventListener('click', startHostObject);
     </script>
 </body>
 

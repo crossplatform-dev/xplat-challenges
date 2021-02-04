@@ -4,6 +4,8 @@ using System.Text.Json;
 using Microsoft.Web.WebView2.Core;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Runtime.InteropServices;
+using System.Collections.Generic;
 
 namespace ipc_wv2
 {
@@ -13,6 +15,21 @@ namespace ipc_wv2
         public double id { get; set; }
         public double start { get; set; }
         public double duration { get; set; }
+    }
+
+    [ClassInterface(ClassInterfaceType.AutoDual)]
+    [ComVisible(true)]
+    public class Bridge
+    {
+        private JsonSerializerOptions options = new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            WriteIndented = true
+        };
+        public string Func(string param)
+        {            
+            return param;
+        }
     }
 
 
@@ -37,6 +54,8 @@ namespace ipc_wv2
         async void InitializeAsync()
         {
             await webView.EnsureCoreWebView2Async(null);
+
+            webView.CoreWebView2.AddHostObjectToScript("bridge", new Bridge());
 
             String location = System.Reflection.Assembly.GetEntryAssembly().Location;
 

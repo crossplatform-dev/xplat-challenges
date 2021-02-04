@@ -22,37 +22,32 @@
         <button id="start-sequential">start sequential</button>
         <label id="results-sequential"></label>
     </div>
-
+    
     <script>
-        let totalMessages = 0;        
-        let startTime;
-        let received;
-
         const startBurst = () => {
-            totalMessages = parseInt(document.getElementById('messages').value);
+            const totalMessages = parseInt(document.getElementById('messages').value);
+            let received = 0;
+            const startTime = Date.now();
             const messages = [];
-            received = 0;
-            startTime = Date.now();            
 
             const onMessage = ({ data: arg }) => {
-                received++;
                 const end = Date.now();
-                const message = JSON.parse(arg);
+                const message = arg;
+
                 message.duration = end - message.start;
                 messages.push(message);
 
+                received++;
+
                 if (received === totalMessages) {
-                    window.chrome.webview.removeEventListener('message', onMessage);
                     const totalTime = end - startTime;
-                    console.log(`Total time: ${totalTime}`);
-
-
                     let durations = 0;
+
                     for (const message of messages) {
                         durations += message.duration;
                     }
                     const average = durations / messages.length;
-                    document.getElementById('results').innerText = `Total: ${totalTime}ms - avg message roundtrip: ${average}ms`;
+                    document.getElementById('results').innerText = `Total: ${totalTime.toFixed(2)}ms - avg message roundtrip: ${average.toFixed(2)}ms`;
                 }
             }
 
@@ -60,37 +55,40 @@
 
             for (let id = 1; id <= totalMessages; id++) {
                 const message = { id, start: Date.now(), duration: 0 };
-                window.chrome.webview.postMessage(JSON.stringify(message));
+                
+                window.chrome.webview.postMessage(message);
             }
         };
 
         document.getElementById('start').addEventListener('click', startBurst);
 
         const startSequential = () => {
-            totalMessages = parseInt(document.getElementById('messages').value);
-            received = 0;
-            startTime = performance.now();            
+            const totalMessages = parseInt(document.getElementById('messages').value);
+            let received = 0;
             const messages = [];
-
+            const startTime = performance.now();
+                        
             const sendMessage = (id) => {
                 const message = { id, start: performance.now(), duration: 0 };
-
-                window.chrome.webview.postMessage(JSON.stringify(message));
+                
+                window.chrome.webview.postMessage(message);
             };
 
-            const onMessage = ({ data: arg }) => {
-                received++;
-                const end = performance.now();                
-                const message = JSON.parse(arg);
+            const onMessage = ({ data: arg }) => {                
+                const end = performance.now();
+                const message = arg;
+
                 message.duration = end - message.start;
                 messages.push(message);
 
-                if (received === totalMessages) {
-                    window.chrome.webview.removeEventListener('message', onMessage);
-                    const totalTime = end - startTime;
-                    console.log(`Total time: ${totalTime}`);
+                received++;
 
+                if (received === totalMessages) {
+                    const totalTime = end - startTime;
                     let durations = 0;
+
+                    window.chrome.webview.removeEventListener('message', onMessage);
+                    
                     for (const message of messages) {
                         durations += message.duration;
                     }
@@ -107,7 +105,6 @@
         };
 
         document.getElementById('start-sequential').addEventListener('click', startSequential);
-
     </script>
 </body>
 
