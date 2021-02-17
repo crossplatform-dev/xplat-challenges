@@ -73,7 +73,7 @@ This measures the raw speed of sending messages under ideal circumstances.
 As expected, the average speed of the message is relatively constant regardless of
 the number of messages sent.
 **Note:** The C++ version stringifyes and parses on the JavaScript side because
-my C++ skill are non-existent and I've been unable to send an object and 
+my C++ skill are non-existent and I've been unable to send an object and
 parse/serialize in C++.
 
 # Startup time
@@ -86,6 +86,7 @@ The applications are compiled in Release mode (when applciable) and launched fro
 line. The executions is recorded with Camtasia and the time is measured from the moment the
 cursor dissappears from the line to the moment the application is fully rendered.
 The applications were executed a few times to make sure they always took about the same time.
+The video can be found in [./recordings/electron-wv2-startup-time.mp4](./recordings/electron-wv2-startup-time.mp4)
 
 | Technology       | Time |
 | ---------------- | ---- |
