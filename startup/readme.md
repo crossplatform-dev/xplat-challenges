@@ -1,7 +1,9 @@
 # Startup time
 
-This tests measure the time it takes to load an application using different technologies.
-The application is a relatively complex JavaScript SPA and there are no preload tasks
-or similar performed before loading the content.
-
-How is measured is by recording on video launching the applications from the command line.
+This benchmark measures how long it takes to get an application fully started. The code being
+executed is https://ahfarmer.github.io/calculator/. The reason is that all resources are
+loaded from the same domain (no ads, tracking, etc.) and it is built in React, which is widely
+used.
+The applications are compiled in Release mode (when applciable) and launched from the command
+line. The executions is recorded with Camtasia and the time is measured from the moment the
+cursor dissappears from the line to the moment the application is fully rendered.
