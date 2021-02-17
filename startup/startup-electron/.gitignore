@@ -87,21 +87,3 @@ typings/
 
 # Electron-Forge
 out/
-
-# Visual Studio (Code) generated files
-.vs/
-bin/
-obj/
-.vscode/
-*.vcxproj.user
-ipc/ipc-cpp/x64
-ipc/ipc-cpp/x86
-ipc/ipc-cpp/arm64
-ipc/ipc-cpp/packages
-x64/
-packages/
-
-# Results of running tests locally
-*.csv
-
-

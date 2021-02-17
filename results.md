@@ -1,3 +1,9 @@
+# Testing machine
+
+All these tests were executed on the Microsoft provided [Windows 10 development virtual machine](https://developer.microsoft.com/en-us/windows/downloads/virtual-machines/) running on Hyper-V. This machine  machines has
+4096MB assigned (dynamic between 2048-8192MB) and 1 virtual processor.
+The host machine is a Surface Laptop 3 with 16GB of memory and an Intel(R) Core(TM) i7-1065G7 CPU.
+
 # File access
 
 Goal is to read and write large numbers of files of different sizes (4k and 1MB) without blocking the UI thread.
@@ -69,3 +75,20 @@ the number of messages sent.
 **Note:** The C++ version stringifyes and parses on the JavaScript side because
 my C++ skill are non-existent and I've been unable to send an object and 
 parse/serialize in C++.
+
+# Startup time
+
+This benchmark measures how long it takes to get an application fully started. The code being
+executed is https://ahfarmer.github.io/calculator/. The reason is that all resources are
+loaded from the same domain (no ads, tracking, etc.) and it is built in React, which is widely
+used.
+The applications are compiled in Release mode (when applciable) and launched from the command
+line. The executions is recorded with Camtasia and the time is measured from the moment the
+cursor dissappears from the line to the moment the application is fully rendered.
+The applications were executed a few times to make sure they always took about the same time.
+
+| Technology       | Time |
+| ---------------- | ---- |
+| Electron 11      | 1.02s|
+| WV2 + NET5 + WPF | 6.05s|
+| WV2 + Win32 (C++)| 2.79s|
