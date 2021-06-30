@@ -11,10 +11,7 @@ function createWindows() {
   mainWindow = new BrowserWindow({
     title: 'Electron IPC benchmark',
     width: 800,
-    height: 600,
-    webPreferences: {
-      nodeIntegration: true
-    }
+    height: 600    
   })
 
   // and load the index.html of the app.

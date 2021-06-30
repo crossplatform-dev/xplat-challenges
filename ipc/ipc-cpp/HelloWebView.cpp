@@ -134,7 +134,7 @@ int CALLBACK WinMain(
 
 						
 						// TODO: Get the right path here somehow!
-						webviewWindow->Navigate(L"C:\\Users\\User\\source\\repos\\molant\\xplat-benchmark\\ipc\\ipc-cpp\\x64\\Debug\\renderer.html");
+						webviewWindow->Navigate(L"C:\\Users\\User\\Projects\\xplat-benchmark\\ipc\\ipc-cpp\\renderer.html");
 
 						// Set an event handler for the host to return received message back to the web content
 						EventRegistrationToken token;

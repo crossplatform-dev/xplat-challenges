@@ -4,18 +4,53 @@
   "description": "Electron IPC tests",
   "main": "src/main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron-forge start",
+    "package": "electron-forge package",
+    "make": "electron-forge make",
+    "publish": "electron-forge publish",
+    "lint": "echo \"No linting configured\""
   },
   "author": {
     "name": "Antón Molleda",
     "email": "amolleda@gmail.com"
   },
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/molant/xplat-benchmarks/issues"
+  "config": {
+    "forge": {
+      "packagerConfig": {},
+      "makers": [
+        {
+          "name": "@electron-forge/maker-squirrel",
+          "config": {
+            "name": "electron"
+          }
+        },
+        {
+          "name": "@electron-forge/maker-zip",
+          "platforms": [
+            "darwin"
+          ]
+        },
+        {
+          "name": "@electron-forge/maker-deb",
+          "config": {}
+        },
+        {
+          "name": "@electron-forge/maker-rpm",
+          "config": {}
+        }
+      ]
+    }
   },
-  "homepage": "https://github.com/molant/xplat-benchmarks#readme",
+  "dependencies": {
+    "electron-squirrel-startup": "^1.0.0"
+  },
   "devDependencies": {
-    "electron": "^11.2.1"
+    "@electron-forge/cli": "6.0.0-beta.57",
+    "@electron-forge/maker-deb": "6.0.0-beta.57",
+    "@electron-forge/maker-rpm": "6.0.0-beta.57",
+    "@electron-forge/maker-squirrel": "6.0.0-beta.57",
+    "@electron-forge/maker-zip": "6.0.0-beta.57",
+    "electron": "13.1.4"
   }
 }

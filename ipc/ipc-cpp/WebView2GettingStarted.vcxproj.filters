@@ -23,9 +23,9 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <Text Include="renderer.html" />
+  </ItemGroup>
+  <ItemGroup>
     <None Include="packages.config" />
-    <None Include="renderer.html">
-      <Filter>Web</Filter>
-    </None>
   </ItemGroup>
 </Project>

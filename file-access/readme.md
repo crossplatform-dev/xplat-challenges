@@ -19,7 +19,7 @@ After clonning the repo make sure to install:
 1. Latest version of [node](https://nodejs.org)
 1. Latest version of [yarn 1.x](https://classic.yarnpkg.com/en/docs/install)
 1. [Visual Studio 2019](https://visualstudio.microsoft.com/downloads/)
-1. Latest version of [Edge Canary](https://www.microsoftedgeinsider.com/en-us/download)
+1. Latest version of [WebView2](https://developer.microsoft.com/en-us/microsoft-edge/webview2/#download-section)
 
 ## Electron
 
