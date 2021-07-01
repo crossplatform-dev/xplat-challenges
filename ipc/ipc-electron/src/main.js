@@ -10,7 +10,7 @@ let backgroundWindow;
 function createWindows() {
   // Create the browser window.
   mainWindow = new BrowserWindow({
-    title: "Electron IPC benchmark - contextIsolation",
+    title: "Electron IPC challenge - contextIsolation",
     width: 800,
     height: 600,
     webPreferences: {

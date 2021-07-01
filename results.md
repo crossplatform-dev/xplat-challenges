@@ -53,7 +53,7 @@ parse/serialize in C++.
 
 # Startup and memory time
 
-This benchmark measures how long it takes to get an application fully started. The code being
+This challenge measures how long it takes to get an application fully started. The code being
 executed is https://ahfarmer.github.io/calculator/. The reason is that all resources are
 loaded from the same domain (no ads, tracking, etc.) and it is built in React, which is widely
 used.

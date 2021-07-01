@@ -9,7 +9,7 @@ let backgroundWindow
 function createWindows() {
   // Create the browser window.
   mainWindow = new BrowserWindow({
-    title: 'Electron IPC benchmark - node integration',
+    title: 'Electron IPC challenge - node integration',
     width: 800,
     height: 600,
     webPreferences: {

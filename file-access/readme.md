@@ -30,7 +30,7 @@ To run the Electron tests:
 1. Run `yarn electron-forge make` to create the packaged version of the application
 1. Run `out\electron-win32-x64\electron.exe` 
 1. Press the "start" button
-1. Once the benchmark is finished, the text in the text area should change to "Done" and `files-access` should have the following 2 new files:
+1. Once the challenge is finished, the text in the text area should change to "Done" and `files-access` should have the following 2 new files:
 
 ```
 electron-1mb-results.csv
@@ -47,7 +47,7 @@ To run the WebView2 tests:
 1. Close Visual Studio
 1. Run `file-access\wpfwebview2\bin\Release\netcoreapp3.1\wpfwebview2.exe`
 1. Press the "start" button
-1. Once the benchmark is finished, the text in the text area should change to "Done" and `files-access` should have the following 2 new files:
+1. Once the challenge is finished, the text in the text area should change to "Done" and `files-access` should have the following 2 new files:
 
 ```
 webview-1mb-results.csv
@@ -64,9 +64,9 @@ To run the WPF tests:
 1. Install the nuget dependencies
 1. Build the solution in Release mode
 1. Close Visual Studio
-1. Run `file-access\wpf\bin\Release\netcoreapp3.1\wpf.exe`
+1. Run `file-access\wpf\bin\Release\net5.0-windows\wpf.exe`
 1. Press the "start" button
-1. Once the benchmark is finished, the text in the text area should change to "Done" and `files-access` should have the following 2 new files:
+1. Once the challenge is finished, the text in the text area should change to "Done" and `files-access` should have the following 2 new files:
 
 ```
 wpf-1mb-results.csv

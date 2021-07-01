@@ -1,6 +1,6 @@
-# Cross-platform benchmarks
+# Cross-platform challenges
 
-Benchmarks to measure different common scenarios accross multiple technologies:
+Challenges to measure different common scenarios accross multiple technologies:
 
 * [File access](./file-access/readme.md)
 * [CPU usage calculating prime numbers](./cpu/readme.md)
@@ -21,6 +21,6 @@ The host machine is a Surface Laptop 3 with 16GB of memory and an Intel(R) Core(
 
 You can check them [here](./results.md).
 
-## Future benchmarks:
+## Future challenges:
 
 * Network requests
