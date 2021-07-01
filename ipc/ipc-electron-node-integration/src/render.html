@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+</head>
+
+<body>
+
+  <p>This Electron app tests various latencies for different IPC roundtrip scenarios.<strong>Time reported in total
+      milliseconds.</strong></p>
+    <input type="text" id="messages" value="1000"/>
+  <div>
+    <button id="start">start burst</button>
+  <label id="results"></label>
+  </div>
+  <div>
+    <button id="start-sequential">start sequential</button>
+  <label id="results-sequential"></label>
+  </div>
+
+  <script src="render.js"></script>
+</body>
+
+</html>

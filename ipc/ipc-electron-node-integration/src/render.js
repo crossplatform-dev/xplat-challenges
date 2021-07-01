@@ -1,3 +1,5 @@
+const { ipcRenderer } = require('electron')
+
 const startBurst = () => {
   const totalMessages = parseInt(document.getElementById('messages').value);
   let received = 0;
@@ -17,7 +19,7 @@ const startBurst = () => {
       const totalTime = end - startTime;
       let durations = 0;
 
-      comms.clear();
+      ipcRenderer.removeListener('asynchronous-reply', onMessage);
 
       for (const message of messages) {
         durations += message.duration;
@@ -27,12 +29,12 @@ const startBurst = () => {
     }
   }
 
-  comms.onMessage(onMessage);
+  ipcRenderer.on('asynchronous-reply', onMessage);
 
   for (let id = 1; id <= totalMessages; id++) {
     const message = { id, start: Date.now(), duration: 0 };
 
-    comms.sendMessage(message);
+    ipcRenderer.send('asynchronous-message', message);
   }
 };
 
@@ -47,7 +49,7 @@ const startSequential = () => {
   const sendMessage = (id) => {
     const message = { id, start: performance.now(), duration: 0 };
 
-    comms.sendMessage(message);
+    ipcRenderer.send('asynchronous-message', message);
   };
 
   const onMessage = (event, arg) => {
@@ -67,7 +69,7 @@ const startSequential = () => {
       const totalTime = end - startTime;
       let durations = 0;
 
-      comms.clear();
+      ipcRenderer.removeListener('asynchronous-reply', onMessage);
 
       for (const message of messages) {
         durations += message.duration;
@@ -79,7 +81,7 @@ const startSequential = () => {
     }
   };
 
-  comms.onMessage(onMessage);
+  ipcRenderer.on('asynchronous-reply', onMessage);
 
   sendMessage(received + 1);
 };
