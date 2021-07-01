@@ -10,48 +10,9 @@ The host machine is a Surface Laptop 3 with 16GB of memory and an Intel(R) Core(
 
 The versions used in these tests are:
 
- * Electron 13.1.4
- * WV2: SDK 1.0.864.35, Runtime 91.0.864
- * .NET: 5.0
-
-# File access
-
-Goal is to read and write large numbers of files of different sizes (4k and 1MB) without blocking the UI thread.
-`async/await` is used in JavaScript and C# to perform all I/O operations.
-
-## Time to write and read 10,000 files of 4k each
-
-times in ms, average of 5 runs
-
-|          | Write files | Read dir | Sequential Read | Concurrent Read |
-| ---------|-------------|----------|-----------------|-----------------|
-| Electron |       6,218 |       21 |           8,751 |           1,059 |
-| WebView2 |      10,585 |       82 |          13,470 |           5,936 |
-| WPF      |       4,101 |        4 |           1,848 |             448 |
-
-## Time to write and read 10,000 files of 1Mb each
-
-times in ms, average of 5 runs
-
-|          | Write files | Read dir | Sequential Read | Concurrent Read |
-| ---------|-------------|----------|-----------------|-----------------|
-| Electron |      29,215 |       34 |          17,518 |           4,602 |
-| WebView2 |      43,250 |       98 |          86,222 |          35,753 |
-| WPF      |      25,729 |        6 |          29,536 |           3,417 |
-
-In WebView 2 files are read in C# and then a message is sent to the WebView with the contents.
-"Concurrent read" reads up to 100 files concurrently.
-
-# CPU
-
-Goal is to calculate all the primer numbers under 10,000,000 while still having the UI being responsive. The UI is updated about 250ms.
-
-Time in ms, average of 5 runs.
-
-|          | 10,000,000 |
-| ---------|------------|
-| Electron |      4,456 |
-| WPF      |      4,181 |
+* Electron 13.1.4
+* WV2: SDK 1.0.864.35, Runtime 91.0.864
+* .NET: 5.0
 
 # IPC
 
@@ -63,27 +24,31 @@ Time in ms, average of 5 runs.
 The time it takes to send roundtrip 1,000 and 10,000 messages at the same time
 This allow us to see how the pipe handles congestion.
 
-|          |  1,000 | 10,000 |
-| ---------|--------|--------|
-| Electron |   49ms |    400ms |
-| WV2 (C#) |  288ms |  2,806ms |
-| WV2 (C++)|  264ms |  1,794ms |
+|                              | 1,000 / avg | 10,000 / avg |
+| -----------------------------|------------:|-------------:|
+| Electron (context isolation) | 414ms / 229.8ms | 2,021ms / 949.4ms |
+| Electron (node integration)  | 138ms /  68.1ms | 1,349ms / 627.5ms |
+| WV2 (C#)                     | 604ms / 332.5ms | 5,408ms / 2713.8ms|
+| WV2 (C++)                    |                 |                   |
 
 ## Roundtrip: Renderer -> Main -> Renderer sequentially
 
 The time it takes to send roundtrip 1,000 and 10,000 messages one by one.
 This measures the raw speed of sending messages under ideal circumstances.
 
-|          |  1,000 / avg    |   10,000 / avg    |
-| ---------|-----------------|-------------------|
-| Electron |  334ms / 0.33ms |  2,837ms / 0.28ms |
-| WV2 (C#) | 1432ms / 1.43ms | 13,613ms / 1.35ms |
-| WV2 (C++)|  943ms / 0.93ms | 10,782ms / 1.06ms |
+|                              | 1,000 / avg | 10,000 / avg |
+|------------------------------|------------:|-------------:|
+| Electron (context isolation) | 211.9ms / 0.21ms | 2,400ms / 0.24ms |
+| Electron (node integration)  | 165.8ms / 0.16ms | 1,316ms / 0.13ms |
+| WV2 (C#)                     | 612.6ms / 0.61ms | 6,075ms / 0.61ms |
+| WV2 (C++)                    |                 |                   |
 
 As expected, the average speed of the message is relatively constant regardless of
 the number of messages sent.
-**Note:** The C++ version stringifyes and parses on the JavaScript side because
-my C++ skill are non-existent and I've been unable to send an object and
+
+**Note:** The C++ still needs to be updated to work with the latest version of
+WV2. Also it will stringufies and parses on the JavaScript side because
+my C++ skills are non-existent and I've been unable to send an object and
 parse/serialize in C++.
 
 # Startup and memory time
@@ -99,18 +64,22 @@ The applications were executed a few times to make sure they always took about t
 The video can be found in [./recordings/electron-wv2-startup-time.mp4](./recordings/electron-wv2-startup-time.mp4)
 
 | Technology       | Time |
-| ---------------- | ---- |
-| Electron 11      | 1.02s|
-| WV2 + NET5 + WPF | 6.05s|
-| WV2 + Win32 (C++)| 2.79s|
+| ---------------- | ---: |
+| Electron         |     s|
+| WV2 + NET5 + WPF |     s|
+| WV2 + Win32 (C++)|     s|
+
+**Note**: The video is from an old version of WV2 and Electron, needs to be
+re-recorded.
+
 
 And these are the results for memory and number of processes:
 
 | Technology | # Processes | Total private bytes | Total working set |
-| --- | --- | --- | --- |
-| Electron | 4 | 78,940 K | 226,396 K |
-| WV2 C++ | 7 | 77,748 K | 268,248 K |
-| WV2 WPF | 7 | 102,840 K |  307,156 K |
+| ---        |        ---: |                ---: |              ---: |
+| Electron   |           4 |             78,940K |          226,396K |
+| WV2 C++    |           7 |             77,748K |          268,248K |
+| WV2 WPF    |           7 |            102,840K |          307,156K |
 
 
 ![Electron results](./startup-memory/results/electron-13.1.4.png)
@@ -119,3 +88,41 @@ And these are the results for memory and number of processes:
 
 ![WV2 WPF results](./startup-memory/results/wv2-wpf-1.0.864.35.png)
 
+# CPU
+
+Goal is to calculate all the primer numbers under 10,000,000 while still having the UI being responsive. The UI is updated about 250ms.
+
+Time in ms, average of 5 runs.
+
+|          | 10,000,000 |
+| ---------|-----------:|
+| Electron |    4,456ms |
+| WPF      |    4,181ms |
+
+# File access
+
+Goal is to read and write large numbers of files of different sizes (4k and 1MB) without blocking the UI thread.
+`async/await` is used in JavaScript and C# to perform all I/O operations.
+
+## Time to write and read 10,000 files of 4k each
+
+times in ms, average of 5 runs
+
+|          | Write files | Read dir | Sequential Read | Concurrent Read |
+| ---------|------------:|---------:|----------------:|----------------:|
+| Electron |       6,218 |       21 |           8,751 |           1,059 |
+| WebView2 |      10,585 |       82 |          13,470 |           5,936 |
+| WPF      |       4,101 |        4 |           1,848 |             448 |
+
+## Time to write and read 10,000 files of 1Mb each
+
+times in ms, average of 5 runs
+
+|          | Write files | Read dir | Sequential Read | Concurrent Read |
+| ---------|------------:|---------:|----------------:|----------------:|
+| Electron |      29,215 |       34 |          17,518 |           4,602 |
+| WebView2 |      43,250 |       98 |          86,222 |          35,753 |
+| WPF      |      25,729 |        6 |          29,536 |           3,417 |
+
+In WebView 2 files are read in C# and then a message is sent to the WebView with the contents.
+"Concurrent read" reads up to 100 files concurrently.
