@@ -232,7 +232,7 @@ const run = async () => {
 
         const [timeToWrite, timeToList, seqTime, parallelTime] = calculateAverage(results);
 
-        await writeAsync(join(process.cwd(), '..', `electron-${size}-${RESULTS_FILE}`),
+        await writeAsync(join(process.cwd(), '..', `electron-node-integration-${size}-${RESULTS_FILE}`),
             `Action,Time elapsed (ms)
 Write files,${timeToWrite}
 Read dir,${timeToList}
