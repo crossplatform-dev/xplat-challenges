@@ -32,7 +32,7 @@
 
             const onMessage = ({ data: arg }) => {
                 const end = Date.now();
-                const message = arg;
+                const message = JSON.parse(arg);
 
                 message.duration = end - message.start;
                 messages.push(message);
@@ -54,7 +54,7 @@
             window.chrome.webview.addEventListener('message', onMessage);
 
             for (let id = 1; id <= totalMessages; id++) {
-                const message = { id, start: Date.now(), duration: 0 };
+                const message = JSON.stringify({ id, start: Date.now(), duration: 0 });
                 
                 window.chrome.webview.postMessage(message);
             }
@@ -69,14 +69,14 @@
             const startTime = performance.now();
                         
             const sendMessage = (id) => {
-                const message = { id, start: performance.now(), duration: 0 };
+                const message = JSON.stringify({ id, start: performance.now(), duration: 0 });
                 
                 window.chrome.webview.postMessage(message);
             };
 
             const onMessage = ({ data: arg }) => {                
                 const end = performance.now();
-                const message = arg;
+                const message = JSON.parse(arg);
 
                 message.duration = end - message.start;
                 messages.push(message);

@@ -140,11 +140,10 @@ int CALLBACK WinMain(
 						EventRegistrationToken token;
 						webviewWindow->add_WebMessageReceived(Callback<ICoreWebView2WebMessageReceivedEventHandler>(
 							[](ICoreWebView2* webview, ICoreWebView2WebMessageReceivedEventArgs* args) -> HRESULT {
-								PWSTR message;								
+								PWSTR message;
 								args->TryGetWebMessageAsString(&message);
 								// processMessage(&message);
-								// TODO: Parse, stringify the message and send using PostWebMessageAsJson
-								webview->PostWebMessageAsString(message);								
+								webview->PostWebMessageAsString(message);
 								CoTaskMemFree(message);
 								return S_OK;
 							}).Get(), &token);

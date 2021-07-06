@@ -26,10 +26,10 @@ This allow us to see how the pipe handles congestion.
 
 |                              | 1,000 / avg | 10,000 / avg |
 | -----------------------------|------------:|-------------:|
-| Electron (context isolation) | 414ms / 229.8ms | 2,021ms / 949.4ms |
-| Electron (node integration)  | 138ms /  68.1ms | 1,349ms / 627.5ms |
-| WV2 (C#)                     | 604ms / 332.5ms | 5,408ms / 2713.8ms|
-| WV2 (C++)                    |                 |                   |
+| Electron (context isolation) | 414ms / 229.8ms | 2,021ms /  949.4ms  |
+| Electron (node integration)  | 138ms /  68.1ms | 1,349ms /  627.5ms  |
+| WV2 (C#)                     | 604ms / 332.5ms | 5,408ms / 2,713.8ms |
+| WV2 (C++)                    | 497ms / 258.3ms | 3,832ms / 2,157.5ms |
 
 ## Roundtrip: Renderer -> Main -> Renderer sequentially
 
@@ -41,15 +41,13 @@ This measures the raw speed of sending messages under ideal circumstances.
 | Electron (context isolation) | 211.9ms / 0.21ms | 2,400ms / 0.24ms |
 | Electron (node integration)  | 165.8ms / 0.16ms | 1,316ms / 0.13ms |
 | WV2 (C#)                     | 612.6ms / 0.61ms | 6,075ms / 0.61ms |
-| WV2 (C++)                    |                 |                   |
+| WV2 (C++)                    |   529ms / 0.53ms | 5,141ms / 0.51ms |
 
 As expected, the average speed of the message is relatively constant regardless of
 the number of messages sent.
 
-**Note:** The C++ still needs to be updated to work with the latest version of
-WV2. Also it will stringufies and parses on the JavaScript side because
-my C++ skills are non-existent and I've been unable to send an object and
-parse/serialize in C++.
+**Note:** The C++ only does the parsing/stringification on the JavaScript
+side because my C++ skills are non-existent.
 
 # Startup and memory time
 
