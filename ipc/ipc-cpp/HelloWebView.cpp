@@ -9,7 +9,10 @@
 #include <pathcch.h>
 // include WebView2 header
 #include "WebView2.h"
+#include "json.hpp"
 
+// for convenience
+using json = nlohmann::json;
 
 using namespace Microsoft::WRL;
 
@@ -31,6 +34,16 @@ static wil::com_ptr<ICoreWebView2Controller> webviewController;
 
 // Pointer to WebView window
 static wil::com_ptr<ICoreWebView2> webviewWindow;
+
+std::string ws2s(const std::wstring& wstr) {
+	std::string strTo;
+	char* szTo = new char[wstr.length() + 1];
+	szTo[wstr.size()] = '\0';
+	WideCharToMultiByte(CP_ACP, 0, wstr.c_str(), -1, szTo, (int)wstr.length(), NULL, NULL);
+	strTo = szTo;
+	delete[] szTo;
+	return strTo;
+}
 
 int CALLBACK WinMain(
 	_In_ HINSTANCE hInstance,
@@ -148,9 +161,17 @@ int CALLBACK WinMain(
 							[](ICoreWebView2* webview, ICoreWebView2WebMessageReceivedEventArgs* args) -> HRESULT {
 								PWSTR message;
 								args->TryGetWebMessageAsString(&message);
-								// processMessage(&message);
+								
+								// TODO: Is this the right way of doing things? Is everything free?
+								auto messageString = ws2s(message);
+								auto parsedMessage = json::parse(messageString);
+								auto reserializedMessage = parsedMessage.dump().c_str();								
+
+								// TODO: Sending the original message because I can't find out how to properly convert to LPWSTR
 								webview->PostWebMessageAsString(message);
 								CoTaskMemFree(message);
+
+								
 								return S_OK;
 							}).Get(), &token);
 

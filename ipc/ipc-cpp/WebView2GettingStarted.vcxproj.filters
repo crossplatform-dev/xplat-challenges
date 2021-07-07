@@ -23,9 +23,12 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="renderer.html" />
+    <None Include="packages.config" />
+    <None Include="renderer.html" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <ClInclude Include="json.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
