@@ -6,8 +6,10 @@
 #include <tchar.h>
 #include <wrl.h>
 #include <wil/com.h>
+#include <pathcch.h>
 // include WebView2 header
 #include "WebView2.h"
+
 
 using namespace Microsoft::WRL;
 
@@ -132,9 +134,13 @@ int CALLBACK WinMain(
 						GetClientRect(hWnd, &bounds);
 						webviewController->put_Bounds(bounds);
 
+						std::wstring uri(MAX_PATH, 0);
+						PWSTR buffer = const_cast<PWSTR>(uri.data());
+						GetModuleFileName(NULL, buffer, MAX_PATH);
+						PathCchRemoveFileSpec(buffer, MAX_PATH);
+						PathCchCombine(buffer, MAX_PATH, buffer, TEXT("renderer.html"));
 						
-						// TODO: Get the right path here somehow!
-						webviewWindow->Navigate(L"C:\\Users\\User\\Projects\\xplat-benchmark\\ipc\\ipc-cpp\\renderer.html");
+						webviewWindow->Navigate(uri.c_str());
 
 						// Set an event handler for the host to return received message back to the web content
 						EventRegistrationToken token;
