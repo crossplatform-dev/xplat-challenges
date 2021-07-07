@@ -95,6 +95,8 @@ Time in ms, average of 5 runs.
 
 # File access
 
+**NOTE:** These numbers are from previous versions. Need to update the code and run them again.
+
 Goal is to read and write large numbers of files of different sizes (4k and 1MB) without blocking the UI thread.
 `async/await` is used in JavaScript and C# to perform all I/O operations.
 
