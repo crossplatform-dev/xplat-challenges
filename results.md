@@ -59,17 +59,13 @@ The applications are compiled in Release mode (when applicable) and launched fro
 line. The executions is recorded with Camtasia and the time is measured from the moment the
 cursor dissappears from the line to the moment the application is fully rendered.
 The applications were executed a few times to make sure they always took about the same time.
-The video can be found in [./recordings/electron-wv2-startup-time.mp4](./recordings/electron-wv2-startup-time.mp4)
+The video can be found in [./recordings/electron-wv2-startup-time-202107.mp4](./recordings/electron-wv2-startup-time-202107.mp4)
 
 | Technology       | Time |
 | ---------------- | ---: |
-| Electron         |     s|
-| WV2 + NET5 + WPF |     s|
-| WV2 + Win32 (C++)|     s|
-
-**Note**: The video is from an old version of WV2 and Electron, needs to be
-re-recorded.
-
+| Electron         |   ~4s|
+| WV2 + NET5 + WPF |   ~3s|
+| WV2 + Win32 (C++)|   ~2s|
 
 And these are the results for memory and number of processes:
 
