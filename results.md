@@ -91,30 +91,32 @@ Time in ms, average of 5 runs.
 
 # File access
 
-**NOTE:** These numbers are from previous versions. Need to update the code and run them again.
+**NOTE:** A WPF version was added to this test to better estimate the impact of sending data
+from/to WV2 and to compare the "raw" speed between Node.js and C# regarding file access.
+Ideally there should be a C++ as well.
 
 Goal is to read and write large numbers of files of different sizes (4k and 1MB) without blocking the UI thread.
 `async/await` is used in JavaScript and C# to perform all I/O operations.
 
-## Time to write and read 10,000 files of 4k each
+## Time to write and read 1,000 files of 4k each
 
-times in ms, average of 5 runs
-
-|                             | Write files | Read dir | Sequential Read | Concurrent Read |
-|-----------------------------|------------:|---------:|----------------:|----------------:|
-| Electron                    |     6,218ms |     21ms |         8,751ms |         1,059ms |
-| WebView2 + NET5 + WPF (C#)  |    10,585ms |     82ms |        13,470ms |         5,936ms |
-| NET5 + WPF (C# w/o WebView2)|     4,101ms |      4ms |         1,848ms |           448ms |
-
-## Time to write and read 10,000 files of 1Mb each
-
-times in ms, average of 5 runs
+Average of 5 runs
 
 |                             | Write files | Read dir | Sequential Read | Concurrent Read |
 |-----------------------------|------------:|---------:|----------------:|----------------:|
-| Electron                    |    29,215ms |     34ms |        17,518ms |         4,602ms |
-| WebView2 + NET5 + WPF (C#)  |    43,250ms |     98ms |        86,222ms |        35,753ms |
-| NET5 + WPF (C# w/o WebView2)|    25,729ms |      6ms |        29,536ms |         3,417ms |
+| Electron (node integration) |       840ms |    1.6ms |           308ms |           118ms |
+| WebView2 + NET5 + WPF (C#)  |     1,833ms |    8.4ms |         1,259ms |         1,058ms |
+| NET5 + WPF (C# w/o WebView2)|     1,371ms |      0ms |           254ms |           136ms |
 
-In WebView 2 files are read in C# and then a message is sent to the WebView with the contents.
+## Time to write and read 1,000 files of 1Mb each
+
+Average of 5 runs
+
+|                             | Write files | Read dir | Sequential Read | Concurrent Read |
+|-----------------------------|------------:|---------:|----------------:|----------------:|
+| Electron (node integration) |     8,553ms |    2.2ms |         2,605ms |         2,360ms |
+| WebView2 + NET5 + WPF (C#)  |    48,774ms |    7.8ms |        93,026ms |        81,729ms |
+| NET5 + WPF (C# w/o WebView2)|     5,972ms |    1.0ms |        11,139ms |         7,741ms |
+
+In WebView2, files are read in C# side and then a message is sent with the contents of the file.
 "Concurrent read" reads up to 100 files concurrently.

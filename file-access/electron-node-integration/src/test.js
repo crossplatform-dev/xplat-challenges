@@ -15,7 +15,7 @@ const ROOT = join(process.cwd(), '..');
 const FIXTURES_PATH = join(ROOT, 'fixtures');
 const SOURCES_PATH = join(ROOT, 'source-files');
 
-const FILES = 10000;
+const FILES = 1000;
 
 /**
  * 

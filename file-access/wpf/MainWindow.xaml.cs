@@ -18,7 +18,7 @@ namespace wpf
         readonly static string SOURCES_PATH = Path.GetFullPath(Path.Join(ROOT, "source-files"));
         readonly int RERUNS = 5;
         readonly int PARALLEL_WORKERS = 100;
-        readonly int FILES = 10000;
+        readonly int FILES = 1000;
 
         public MainWindow()
         {

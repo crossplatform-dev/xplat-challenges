@@ -1,6 +1,6 @@
 ﻿const PARALLEL_WORKERS = 100;
 const RERUNS = 5;
-const FILES = 10000;
+const FILES = 1000;
 
 const callbacks = new Map();
 
